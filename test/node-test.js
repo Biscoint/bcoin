@@ -595,7 +595,9 @@ describe('Node', function() {
       address: addr.toString(node.network),
       scriptPubKey: Script.fromAddress(addr, node.network).toJSON(),
       isscript: false,
-      iswitness: false
+      iswitness: true,
+      witness_version: 0,
+      witness_program: '0'.repeat(40)
     });
   });
 
@@ -605,7 +607,8 @@ describe('Node', function() {
       outputs: [{
         value: 100000,
         address: await wallet.receiveAddress()
-      }]
+      }],
+      useSelectEstimate: true
     });
 
     await wallet.sign(mtx);
@@ -630,7 +633,8 @@ describe('Node', function() {
       outputs: [{
         value: 50000,
         address: await wallet.receiveAddress()
-      }]
+      }],
+      useSelectEstimate: true
     });
 
     await wallet.sign(mtx);

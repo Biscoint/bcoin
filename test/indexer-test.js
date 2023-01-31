@@ -26,6 +26,7 @@ const Network = require('../lib/protocol/network');
 const network = Network.get('regtest');
 const {NodeClient, WalletClient} = require('../lib/client');
 const {forValue, testdir, rimraf} = require('./util/common');
+const {services} = require('../lib/net/common');
 
 const ports = {
   p2p: 49331,
@@ -755,8 +756,9 @@ describe('Indexer', function() {
           assert.equal(blocks.length, 150);
 
           for (let i = 0; i < 10; i++) {
-            for (const v of vectors)
-              await wclient.execute('sendtoaddress', [v.addr, v.amount]);
+            for (const v of vectors) {
+              await wclient.execute('sendtoaddress', [v.addr, v.amount, '', '', false, true]);
+            }
 
             const blocks = await nclient.execute(
               'generatetoaddress', [1, coinbase]);
@@ -938,6 +940,39 @@ describe('Indexer', function() {
         assert.equal(node.txindex, null);
         assert.equal(node.addrindex, null);
       });
+
+      it('will require filter index for BIP157 (negative)', async () => {
+        let err = null;
+
+        try {
+          new FullNode({
+            prefix: prefix,
+            network: 'regtest',
+            port: ports.p2p,
+            httpPort: ports.node,
+            bip157: true
+          });
+        } catch (e) {
+          err = e;
+        }
+        assert(err);
+        assert.equal(err.message, 'Filter indexer is required for BIP 157');
+      });
+
+      it('will require filter index for BIP157 (positive)', async () => {
+        const node = new FullNode({
+          prefix: prefix,
+          network: 'regtest',
+          port: ports.p2p,
+          httpPort: ports.node,
+          indexFilter: true,
+          bip157: true
+        });
+
+        await node.open();
+        assert(node.pool.options.services & services.NODE_COMPACT_FILTERS);
+        await node.close();
+      });
     });
   });
 
@@ -961,8 +996,7 @@ describe('Indexer', function() {
     before(async () => {
       this.timeout(120000);
 
-      // Setup a testing node with txindex and addrindex
-      // both enabled.
+      // Setup a testing node with txindex, addrindex and filterindex enabled.
       node = new FullNode({
         network: 'regtest',
         apiKey: 'foo',
@@ -972,6 +1006,7 @@ describe('Indexer', function() {
         workersSize: 2,
         indexTX: true,
         indexAddress: true,
+        indexFilter: true,
         port: ports.p2p,
         httpPort: ports.node,
         plugins: [require('../lib/wallet/plugin')],
@@ -1016,7 +1051,7 @@ describe('Indexer', function() {
       for (let i = 0; i < 10; i++) {
         for (const v of vectors) {
           const txid = await wclient.execute(
-            'sendtoaddress', [v.addr, v.amount]);
+            'sendtoaddress', [v.addr, v.amount, '', '', false, true]);
 
           confirmed.push(txid);
         }
@@ -1033,7 +1068,7 @@ describe('Indexer', function() {
       for (let i = 0; i < 5; i++) {
         for (const v of vectors) {
           const txid = await wclient.execute(
-            'sendtoaddress', [v.addr, v.amount]);
+            'sendtoaddress', [v.addr, v.amount, '', '', false, true]);
 
           unconfirmed.push(txid);
         }
@@ -1319,6 +1354,16 @@ describe('Indexer', function() {
           assert(unconfirmed.includes(all[i].hash));
 
         assert.deepEqual(sanitize(one.concat(two)), sanitize(all));
+      });
+
+      it('should get info', async () => {
+        const {indexes: {filter}} = await nclient.getInfo();
+
+        assert.strictEqual(Object.keys(filter).length, 1);
+
+        assert(filter.BASIC);
+        assert(filter.BASIC.enabled);
+        assert.strictEqual(filter.BASIC.height, node.chain.height);
       });
     }
 

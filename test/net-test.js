@@ -283,6 +283,161 @@ describe('Net', function() {
       check(pkt);
     });
 
+    it('getCFilters', () => {
+      const check = (pkt) => {
+        assert.equal(pkt.cmd, 'getcfilters');
+        assert.equal(pkt.type, packets.types.GETCFILTERS);
+
+        assert.equal(pkt.startHeight, 12);
+        assert.equal(pkt.stopHash.toString('hex'), 'ab'.repeat(32));
+        assert.equal(pkt.filterType, common.FILTERS.BASIC);
+
+        assert.equal(pkt.getSize(), 37);
+        assert.bufferEqual(pkt.toRaw(), Buffer.from('00' +
+          '0c000000' +
+          'abababababababababababababababababababababababababababababababab',
+          'hex'));
+      };
+
+      let pkt = new packets.GetCFiltersPacket(
+        0,
+        12,
+        Buffer.from('ab'.repeat(32), 'hex')
+      );
+      check(pkt);
+
+      pkt = packets.GetCFiltersPacket.fromRaw(pkt.toRaw());
+      check(pkt);
+    });
+
+    it('getCFHeaders', () => {
+      const check = (pkt) => {
+        assert.equal(pkt.cmd, 'getcfheaders');
+        assert.equal(pkt.type, packets.types.GETCFHEADERS);
+
+        assert.equal(pkt.startHeight, 12);
+        assert.equal(pkt.stopHash.toString('hex'), 'ab'.repeat(32));
+        assert.equal(pkt.filterType, common.FILTERS.BASIC);
+        assert.equal(pkt.getSize(), 37);
+        assert.bufferEqual(pkt.toRaw(), Buffer.from('00' +
+          '0c000000' +
+          'abababababababababababababababababababababababababababababababab',
+          'hex'));
+      };
+
+      let pkt = new packets.GetCFHeadersPacket(
+        0,
+        12,
+        Buffer.from('ab'.repeat(32), 'hex')
+      );
+      check(pkt);
+
+      pkt = packets.GetCFHeadersPacket.fromRaw(pkt.toRaw());
+      check(pkt);
+    });
+
+    it('getCFCheckpt', () => {
+      const check = (pkt) => {
+        assert.equal(pkt.cmd, 'getcfcheckpt');
+        assert.equal(pkt.type, packets.types.GETCFCHECKPT);
+
+        assert.equal(pkt.filterType, common.FILTERS.BASIC);
+        assert.equal(pkt.getSize(), 33);
+        assert.bufferEqual(pkt.toRaw(), Buffer.from('00' +
+          'abababababababababababababababababababababababababababababababab', 'hex'));
+      };
+
+      let pkt = new packets.GetCFCheckptPacket(
+        0,
+        Buffer.from('ab'.repeat(32), 'hex')
+      );
+      check(pkt);
+
+      pkt = packets.GetCFCheckptPacket.fromRaw(pkt.toRaw());
+      check(pkt);
+    });
+
+    it('CFilter', () => {
+      const check = (pkt) => {
+        assert.equal(pkt.cmd, 'cfilter');
+        assert.equal(pkt.type, packets.types.CFILTER);
+
+        assert.equal(pkt.filterType, common.FILTERS.BASIC);
+        assert.equal(pkt.getSize(), 94);
+        assert.bufferEqual(pkt.toRaw(), Buffer.from('00' +
+          'abababababababababababababababababababababababababababababababab' +
+          '3c' +
+          'abababababababababababababababababababababababababababababababababababababababababababababababababababababababababababab', 'hex'));
+      };
+
+      let pkt = new packets.CFilterPacket(
+        0,
+        Buffer.from('ab'.repeat(32), 'hex'),
+        Buffer.from('ab'.repeat(60), 'hex')
+      );
+      check(pkt);
+
+      pkt = packets.CFilterPacket.fromRaw(pkt.toRaw());
+      check(pkt);
+    });
+
+    it('CFHeaders', () => {
+      const check = (pkt) => {
+        assert.equal(pkt.cmd, 'cfheaders');
+        assert.equal(pkt.type, packets.types.CFHEADERS);
+
+        assert.equal(pkt.filterType, common.FILTERS.BASIC);
+        assert.equal(pkt.getSize(), 226);
+        assert.bufferEqual(pkt.toRaw(), Buffer.from('00' +
+          'abababababababababababababababababababababababababababababababab' +
+          'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' +
+          '05' +
+          'abababababababababababababababababababababababababababababababab' +
+          'abababababababababababababababababababababababababababababababab' +
+          'abababababababababababababababababababababababababababababababab' +
+          'abababababababababababababababababababababababababababababababab' +
+          'abababababababababababababababababababababababababababababababab', 'hex'));
+      };
+
+      let pkt = new packets.CFHeadersPacket(
+        0,
+        Buffer.from('ab'.repeat(32), 'hex'),
+        Buffer.from('aa'.repeat(32), 'hex'),
+        Array(5)
+          .fill(Buffer.from('ab'.repeat(32), 'hex')));
+      check(pkt);
+
+      pkt = packets.CFHeadersPacket.fromRaw(pkt.toRaw());
+      check(pkt);
+    });
+
+    it('CFCheckpt', () => {
+      const check = (pkt) => {
+        assert.equal(pkt.cmd, 'cfcheckpt');
+        assert.equal(pkt.type, packets.types.CFCHECKPT);
+
+        assert.equal(pkt.filterType, common.FILTERS.BASIC);
+        assert.equal(pkt.getSize(), 162);
+        assert.bufferEqual(pkt.toRaw(), Buffer.from('00' +
+          'abababababababababababababababababababababababababababababababab' +
+          '04' +
+          'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' +
+          'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' +
+          'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' +
+          'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'hex'));
+      };
+
+      let pkt = new packets.CFCheckptPacket(
+        0,
+        Buffer.from('ab'.repeat(32), 'hex'),
+        Array(4)
+          .fill(Buffer.from('aa'.repeat(32), 'hex')));
+      check(pkt);
+
+      pkt = packets.CFCheckptPacket.fromRaw(pkt.toRaw());
+      check(pkt);
+    });
+
     it('getblocks', () => {
       const check = (pkt, values) => {
         assert.equal(pkt.cmd, 'getblocks');
@@ -782,7 +937,7 @@ describe('Net', function() {
 
         try {
           await peer.handlePacket();
-        } catch(e) {
+        } catch (e) {
           err = e;
         }
 
@@ -1241,24 +1396,45 @@ describe('Net', function() {
     });
 
     describe('handleSendCmpct (BIP152)', function() {
-      it('will not set compact mode (already set)', async () => {
+      it('switch compact blocks modes (mode=0) to (mode=1)', async () => {
         const peer = Peer.fromOptions({});
-        const pkt = new packets.SendCmpctPacket(1, 1);
-        peer.compactMode = 2;
+        assert.equal(peer.compactMode, -1);
+
+        const pkt = new packets.SendCmpctPacket(0, 2);
         await peer.handleSendCmpct(pkt);
-        assert.equal(peer.compactMode, 2);
+        assert.equal(peer.compactMode, 0);
+
+        const pkt2 = new packets.SendCmpctPacket(1, 2);
+        await peer.handleSendCmpct(pkt2);
+        assert.equal(peer.compactMode, 1);
+      });
+
+      it('should ignore duplicate sendcmpct (v2 to v1)', async () => {
+        const peer = Peer.fromOptions({});
+        assert.equal(peer.compactMode, -1);
+        assert.equal(peer.compactWitness, false);
+
+        const pkt = new packets.SendCmpctPacket(0, 2);
+        await peer.handleSendCmpct(pkt);
+        assert.equal(peer.compactMode, 0);
+        assert.equal(peer.compactWitness, true);
+
+        const pkt2 = new packets.SendCmpctPacket(0, 1);
+        await peer.handleSendCmpct(pkt2);
+        assert.equal(peer.compactMode, 0);
+        assert.equal(peer.compactWitness, true);
       });
 
       it('will set low-bandwidth mode (mode=0)', async () => {
         const peer = Peer.fromOptions({});
-        const pkt = new packets.SendCmpctPacket(0, 1);
+        const pkt = new packets.SendCmpctPacket(0, 2);
         await peer.handleSendCmpct(pkt);
         assert.equal(peer.compactMode, 0);
       });
 
       it('will set high-bandwidth mode (mode=1)', async () => {
         const peer = Peer.fromOptions({});
-        const pkt = new packets.SendCmpctPacket(1, 1);
+        const pkt = new packets.SendCmpctPacket(1, 2);
         await peer.handleSendCmpct(pkt);
         assert.equal(peer.compactMode, 1);
       });
@@ -1271,10 +1447,11 @@ describe('Net', function() {
         assert.equal(peer.compactWitness, false);
       });
 
-      it('will set witness=false (version=1)', async () => {
+      it('will ignore witness=false (version=1)', async () => {
         const peer = Peer.fromOptions({});
         const pkt = new packets.SendCmpctPacket(0, 1);
         await peer.handleSendCmpct(pkt);
+        assert.equal(peer.compactMode, -1);
         assert.equal(peer.compactWitness, false);
       });
 
@@ -1282,6 +1459,7 @@ describe('Net', function() {
         const peer = Peer.fromOptions({});
         const pkt = new packets.SendCmpctPacket(0, 2);
         await peer.handleSendCmpct(pkt);
+        assert.equal(peer.compactMode, 0);
         assert.equal(peer.compactWitness, true);
       });
 
