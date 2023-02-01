@@ -24,7 +24,7 @@ const {wdb} = node.require('walletdb');
 
 let wallet = null;
 
-describe.only('SPV Node', function() {
+describe('SPV Node', function() {
   this.timeout(process.browser ? 20000 : 5000);
 
   if (process.browser)
